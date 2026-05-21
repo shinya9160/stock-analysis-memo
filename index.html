@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <!-- iPhone等のスマホで見やすくするための設定 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#2563eb">
+  <title>株式分析メモ</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="app-header">
+    <h1>株式分析メモ</h1>
+  </header>
+
+  <main class="container">
+    <!-- 入力フォーム -->
+    <section class="card">
+      <h2 id="form-title">銘柄を追加</h2>
+      <form id="stock-form" novalidate>
+        <!-- 編集中の銘柄ID(新規追加時は空) -->
+        <input type="hidden" id="edit-id" value="">
+
+        <label class="field">
+          <span class="field-label">銘柄コード <em>必須</em></span>
+          <input type="text" id="code" placeholder="例: 7203" required inputmode="numeric">
+        </label>
+
+        <label class="field">
+          <span class="field-label">銘柄名 <em>必須</em></span>
+          <input type="text" id="name" placeholder="例: トヨタ自動車" required>
+        </label>
+
+        <label class="field">
+          <span class="field-label">購入価格(円) <em>必須</em></span>
+          <input type="number" id="buy-price" placeholder="例: 2500" required min="0" step="0.01" inputmode="decimal">
+        </label>
+
+        <label class="field">
+          <span class="field-label">現在価格(円) <em>必須</em></span>
+          <input type="number" id="current-price" placeholder="例: 2800" required min="0" step="0.01" inputmode="decimal">
+        </label>
+
+        <label class="field">
+          <span class="field-label">メモ</span>
+          <textarea id="memo" placeholder="買った理由・分析メモなど" rows="3"></textarea>
+        </label>
+
+        <div class="form-actions">
+          <button type="submit" id="submit-btn" class="btn btn-primary">追加する</button>
+          <button type="button" id="cancel-btn" class="btn btn-ghost hidden">キャンセル</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- 銘柄一覧 -->
+    <section class="card">
+      <h2>登録済み銘柄</h2>
+      <p id="empty-message" class="empty">まだ登録がありません。上のフォームから追加してください。</p>
+      <ul id="stock-list" class="stock-list"></ul>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

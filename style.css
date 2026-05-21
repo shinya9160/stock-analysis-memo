@@ -1,0 +1,234 @@
+/* ===========================================
+   株式分析メモ - スタイル
+   モバイルファーストで書いています
+   色やサイズを変えたい時はこの :root の変数だけ
+   変更すれば、全体に反映されます
+   =========================================== */
+:root {
+  --color-bg: #f5f7fa;
+  --color-card: #ffffff;
+  --color-text: #1f2937;
+  --color-muted: #6b7280;
+  --color-primary: #2563eb;
+  --color-primary-dark: #1d4ed8;
+  --color-border: #e5e7eb;
+  --color-profit: #16a34a;  /* プラス時の色(緑) */
+  --color-loss: #dc2626;    /* マイナス時の色(赤) */
+  --color-danger: #ef4444;
+  --radius: 12px;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans",
+               "Helvetica Neue", Arial, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: 16px;
+  line-height: 1.5;
+  /* iPhoneのノッチ対応 */
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ヘッダー */
+.app-header {
+  background: var(--color-primary);
+  color: #fff;
+  padding: 16px;
+  padding-top: calc(16px + env(safe-area-inset-top));
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+.app-header h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+/* コンテナ(スマホでは画面幅いっぱい / PCでは中央に表示) */
+.container {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* カード(白い箱) */
+.card {
+  background: var(--color-card);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+.card h2 {
+  margin: 0 0 12px;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+/* フォーム */
+.field {
+  display: block;
+  margin-bottom: 12px;
+}
+.field-label {
+  display: block;
+  font-size: 13px;
+  color: var(--color-muted);
+  margin-bottom: 4px;
+}
+.field-label em {
+  font-style: normal;
+  color: var(--color-danger);
+  font-size: 11px;
+  margin-left: 4px;
+}
+.field input,
+.field textarea {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px; /* iPhoneでフォーカス時に画面拡大されないよう16px */
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--color-text);
+  font-family: inherit;
+}
+.field input:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+.field textarea {
+  resize: vertical;
+}
+
+/* ボタン */
+.form-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+.btn {
+  flex: 1;
+  padding: 12px 16px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  /* タップしやすい高さ確保 */
+  min-height: 44px;
+}
+.btn-primary {
+  background: var(--color-primary);
+  color: #fff;
+}
+.btn-primary:active {
+  background: var(--color-primary-dark);
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--color-muted);
+  border: 1px solid var(--color-border);
+}
+.btn-small {
+  padding: 8px 12px;
+  font-size: 14px;
+  min-height: 36px;
+  flex: none;
+}
+.btn-edit {
+  background: #eef2ff;
+  color: var(--color-primary);
+}
+.btn-delete {
+  background: #fee2e2;
+  color: var(--color-danger);
+}
+.hidden { display: none !important; }
+
+/* 銘柄一覧 */
+.empty {
+  color: var(--color-muted);
+  text-align: center;
+  font-size: 14px;
+  margin: 16px 0;
+}
+.stock-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.stock-item {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 12px;
+  background: #fff;
+}
+.stock-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.stock-title {
+  font-weight: 600;
+  font-size: 16px;
+  word-break: break-all;
+}
+.stock-code {
+  color: var(--color-muted);
+  font-size: 13px;
+  margin-right: 6px;
+}
+.stock-prices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+.price-block .price-label {
+  display: block;
+  color: var(--color-muted);
+  font-size: 12px;
+}
+.price-block .price-value {
+  font-weight: 600;
+}
+.profit-rate {
+  font-size: 18px;
+  font-weight: 700;
+  text-align: right;
+}
+.profit-rate.profit { color: var(--color-profit); }
+.profit-rate.loss   { color: var(--color-loss); }
+.profit-rate.flat   { color: var(--color-muted); }
+
+.stock-memo {
+  margin: 8px 0;
+  padding: 8px;
+  background: #f9fafb;
+  border-radius: 6px;
+  font-size: 14px;
+  white-space: pre-wrap;
+  color: #374151;
+}
+.stock-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
