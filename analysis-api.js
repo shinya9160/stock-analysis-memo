@@ -5,83 +5,79 @@
    別のサービスに乗り換えたくなったら、この fetchStockQuote の
    中身だけを書き換えれば、画面側 (analysis.js) を触らずに済みます。
 
-   現状は Twelve Data (https://twelvedata.com) を使用しています。
-     - 無料プラン目安: 8 calls/分、800 calls/日
-     - 日本株は「7203.T」のように .T を付けて指定
+   現状: Yahoo Finance の chart エンドポイントを使用
+     - ブラウザから直接叩くと CORS で弾かれるため、公開プロキシ
+       (allorigins.win) を経由する
+     - APIキー不要・無料・日本株対応(.T サフィックス)
    =========================================== */
 
-// localStorage に APIキーを保存するときのキー名
-const API_KEY_STORAGE = "stock-analysis-memo:api-key";
-
-// APIキー取得
-function getApiKey() {
-  return localStorage.getItem(API_KEY_STORAGE) || "";
-}
-
-// APIキー保存(空文字なら削除)
-function setApiKey(key) {
-  if (key) localStorage.setItem(API_KEY_STORAGE, key);
-  else localStorage.removeItem(API_KEY_STORAGE);
-}
+// CORSプロキシ。Yahoo Finance はブラウザ直接アクセスを許可していないため、
+// 公開プロキシ経由でJSONを取得する。
+// 万一 allorigins.win が落ちた場合は、以下の代替プロキシに差し替え可能:
+//   - "https://corsproxy.io/?"
+//   - "https://cors.eu.org/"
+const CORS_PROXY = "https://api.allorigins.win/raw?url=";
 
 /**
  * 銘柄コード(4桁)から株価情報を取得する
  *
  * @param {string} code  例: "7203"
  * @returns {Promise<{name:string, currentPrice:number, marketCap:number|null, currency:string}>}
- * @throws {Error}  APIキー未設定、ネットワークエラー、または取得失敗
+ * @throws {Error}  ネットワーク・パース失敗・銘柄不存在のいずれか
  */
 async function fetchStockQuote(code) {
-  const apiKey = getApiKey();
-  if (!apiKey) {
-    throw new Error("APIキーが未設定です。画面上部の『API設定』から登録してください。");
-  }
-
-  // 日本株は東証(TYO)= ".T" サフィックス
+  // 日本株は東証 = ".T" サフィックス
   const symbol = `${code}.T`;
-  const enc = encodeURIComponent;
 
-  // 1) 価格・銘柄名 → /quote
-  // 2) 時価総額         → /statistics
-  // 並列で叩いて速くする。/statistics は無料プランで叩けない可能性があるため
-  // 失敗してもアプリ全体は止めず、時価総額のみ「--」表示にする。
-  const quoteUrl = `https://api.twelvedata.com/quote?symbol=${enc(symbol)}&apikey=${enc(apiKey)}`;
-  const statUrl  = `https://api.twelvedata.com/statistics?symbol=${enc(symbol)}&apikey=${enc(apiKey)}`;
+  // Yahoo Finance の "chart" エンドポイントは認証不要で価格と銘柄名を返す
+  const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}`;
+  const proxiedUrl = CORS_PROXY + encodeURIComponent(yahooUrl);
 
-  const [quoteResult, statResult] = await Promise.allSettled([
-    fetch(quoteUrl).then((r) => r.json()),
-    fetch(statUrl).then((r) => r.json()),
-  ]);
-
-  // --- /quote の結果 ---
-  if (quoteResult.status !== "fulfilled") {
-    throw new Error("ネットワークエラー: 株価サーバーに接続できませんでした。");
+  let res;
+  try {
+    res = await fetch(proxiedUrl);
+  } catch (e) {
+    throw new Error("ネットワークエラー: サーバーに接続できませんでした。");
   }
-  const quote = quoteResult.value;
-  // Twelve Data はエラー時 { status: "error", message: "..." } を返す
-  if (quote && quote.status === "error") {
-    throw new Error(`データ取得失敗: ${quote.message || "原因不明"}`);
+  if (!res.ok) {
+    throw new Error(`サーバーエラー (HTTP ${res.status})。少し時間をおいて再試行してください。`);
   }
-  const currentPrice = parseFloat(quote.close);
-  if (!quote || isNaN(currentPrice)) {
+
+  let data;
+  try {
+    data = await res.json();
+  } catch (e) {
+    throw new Error("レスポンスを解釈できませんでした(プロキシ応答異常の可能性)。");
+  }
+
+  // Yahoo はエラー時に chart.error にメッセージを入れる
+  const errInfo = data?.chart?.error;
+  if (errInfo) {
+    if (errInfo.code === "Not Found") {
+      throw new Error(`銘柄コード ${code} が見つかりません。コードが正しいか確認してください。`);
+    }
+    throw new Error(`データ取得失敗: ${errInfo.description || errInfo.code || "原因不明"}`);
+  }
+
+  const result = data?.chart?.result?.[0];
+  const meta = result?.meta;
+  if (!meta) {
     throw new Error(`銘柄コード ${code} のデータが見つかりませんでした。`);
   }
 
-  // --- /statistics の結果(失敗しても続行) ---
-  let marketCap = null;
-  if (statResult.status === "fulfilled") {
-    const stat = statResult.value;
-    if (stat && stat.status !== "error") {
-      const m = stat?.statistics?.valuations_metrics?.market_capitalization;
-      const num = typeof m === "string" ? parseFloat(m) : m;
-      if (typeof num === "number" && !isNaN(num)) marketCap = num;
-    }
+  const price = parseFloat(meta.regularMarketPrice);
+  if (isNaN(price)) {
+    throw new Error(`銘柄コード ${code} の価格情報が取得できませんでした。`);
   }
 
   return {
-    name: quote.name || `銘柄 ${code}`,
-    currentPrice,
-    marketCap,
-    currency: quote.currency || "JPY",
+    // longName が無ければ shortName、それも無ければコードを表示用に使う
+    name:         meta.longName || meta.shortName || `銘柄 ${code}`,
+    currentPrice: price,
+    // chart エンドポイントは時価総額を返さない。Yahoo の time-cap情報は
+    // 認証付きエンドポイントが必要なので、ここでは null としておく。
+    // 必要であれば手入力欄を analysis.html に追加して補完してください。
+    marketCap:    null,
+    currency:     meta.currency || "JPY",
   };
 }

@@ -17,28 +17,6 @@
   </header>
 
   <main class="container container-wide">
-    <!-- API キーの設定(初回のみ開く想定) -->
-    <section class="card">
-      <details id="api-settings">
-        <summary>API設定(初回のみ)</summary>
-        <p class="help">
-          株価データは
-          <a href="https://twelvedata.com" target="_blank" rel="noopener">Twelve Data</a>
-          から取得します。無料登録してAPIキーを発行し、下に貼り付けて「保存」してください。
-          キーはこの端末のブラウザにのみ保存されます(外部に送信しません)。
-        </p>
-        <label class="field">
-          <span class="field-label">APIキー</span>
-          <input type="password" id="api-key" placeholder="例: abc123...">
-        </label>
-        <div class="form-actions">
-          <button type="button" id="save-key-btn" class="btn btn-primary">保存</button>
-          <button type="button" id="clear-key-btn" class="btn btn-ghost">クリア</button>
-        </div>
-        <p id="key-status" class="status"></p>
-      </details>
-    </section>
-
     <!-- 2カラム(iPad以上) / 1カラム(iPhone) -->
     <div class="two-col">
       <!-- 左カラム: 入力 -->
@@ -100,10 +78,6 @@
             <div class="stat">
               <span class="stat-label">現在株価</span>
               <span class="stat-value" id="current-price">¥--</span>
-            </div>
-            <div class="stat">
-              <span class="stat-label">時価総額</span>
-              <span class="stat-value" id="market-cap">--</span>
             </div>
           </div>
 

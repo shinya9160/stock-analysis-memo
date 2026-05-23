@@ -46,15 +46,6 @@ function formatPrice(value) {
   return "¥" + Number(value).toLocaleString("ja-JP", { maximumFractionDigits: 2 });
 }
 
-// 時価総額(円)を「兆 / 億」付きで人間に読みやすくする
-function formatMarketCap(value) {
-  if (value == null || isNaN(value)) return "--";
-  const v = Number(value);
-  if (v >= 1e12) return (v / 1e12).toFixed(2) + " 兆円";
-  if (v >= 1e8)  return (v / 1e8).toFixed(2) + " 億円";
-  return v.toLocaleString("ja-JP") + " 円";
-}
-
 function formatRate(rate) {
   if (rate == null || isNaN(rate)) return "--";
   const sign = rate > 0 ? "+" : "";
@@ -77,13 +68,6 @@ function escapeHtml(text) {
 
 /* -------- DOM要素の取り出し -------- */
 
-// API設定パネル
-const apiSettings  = document.getElementById("api-settings");
-const apiKeyInput  = document.getElementById("api-key");
-const saveKeyBtn   = document.getElementById("save-key-btn");
-const clearKeyBtn  = document.getElementById("clear-key-btn");
-const keyStatusEl  = document.getElementById("key-status");
-
 // 銘柄検索フォーム
 const fetchForm   = document.getElementById("fetch-form");
 const codeInput   = document.getElementById("code");
@@ -96,7 +80,6 @@ const resultTitle     = document.getElementById("result-title");
 const resultCode      = document.getElementById("result-code");
 const resultCurrency  = document.getElementById("result-currency");
 const currentPriceEl  = document.getElementById("current-price");
-const marketCapEl     = document.getElementById("market-cap");
 const price1yEl       = document.getElementById("price-1y");
 const price2yEl       = document.getElementById("price-2y");
 const rate1yEl        = document.getElementById("rate-1y");
@@ -120,39 +103,6 @@ const emptyMessageEl = document.getElementById("empty-message");
    API取得直後の現在価格・銘柄名などを一時的に保持しておく
 */
 let currentQuote = null; // { code, name, currentPrice, marketCap, currency }
-
-/* -------- API設定(キーの保存・クリア) -------- */
-
-function initApiSettingsUI() {
-  const existing = getApiKey();
-  if (existing) {
-    apiKeyInput.value = existing;
-    keyStatusEl.textContent = "✓ APIキーは保存済みです";
-    keyStatusEl.className = "status status-ok";
-  } else {
-    // 未設定なら最初から開いておく
-    apiSettings.open = true;
-  }
-}
-
-saveKeyBtn.addEventListener("click", () => {
-  const key = apiKeyInput.value.trim();
-  if (!key) {
-    keyStatusEl.textContent = "APIキーを入力してください。";
-    keyStatusEl.className = "status status-error";
-    return;
-  }
-  setApiKey(key);
-  keyStatusEl.textContent = "✓ APIキーを保存しました";
-  keyStatusEl.className = "status status-ok";
-});
-
-clearKeyBtn.addEventListener("click", () => {
-  setApiKey("");
-  apiKeyInput.value = "";
-  keyStatusEl.textContent = "APIキーを削除しました";
-  keyStatusEl.className = "status";
-});
 
 /* -------- 銘柄データの取得 -------- */
 
@@ -178,7 +128,6 @@ fetchForm.addEventListener("submit", async (event) => {
     resultCode.textContent = `(${code}.T)`;
     resultCurrency.textContent = quote.currency || "";
     currentPriceEl.textContent = formatPrice(quote.currentPrice);
-    marketCapEl.textContent = formatMarketCap(quote.marketCap);
     resultCard.classList.remove("hidden");
     forecastCard.classList.remove("hidden");
 
@@ -248,7 +197,6 @@ saveBtn.addEventListener("click", () => {
     code:         currentQuote.code,
     name:         currentQuote.name,
     currentPrice: currentQuote.currentPrice,
-    marketCap:    currentQuote.marketCap,
     currency:     currentQuote.currency,
     forecastPer:  parseFloat(perInput.value)   || null,
     eps1y:        parseFloat(eps1yInput.value) || null,
@@ -311,10 +259,6 @@ function renderList() {
             <span class="stat-value">${formatPrice(a.currentPrice)}</span>
           </div>
           <div class="stat">
-            <span class="stat-label">時価総額</span>
-            <span class="stat-value">${formatMarketCap(a.marketCap)}</span>
-          </div>
-          <div class="stat">
             <span class="stat-label">1年後</span>
             <span class="stat-value">${formatPrice(p1)}</span>
             <span class="stat-sub ${rateClass(r1)}">${formatRate(r1)}</span>
@@ -362,5 +306,4 @@ savedListEl.addEventListener("click", async (event) => {
 
 /* -------- 初期表示 -------- */
 
-initApiSettingsUI();
 renderList();
