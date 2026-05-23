@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <!-- iPhone/iPadで表示崩れしないようにビューポートを設定 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#2563eb">
+  <title>銘柄分析 - 株式分析メモ</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="app-header">
+    <h1>銘柄分析</h1>
+    <nav class="header-nav">
+      <a href="index.html" class="nav-link">損益メモへ →</a>
+    </nav>
+  </header>
+
+  <main class="container container-wide">
+    <!-- API キーの設定(初回のみ開く想定) -->
+    <section class="card">
+      <details id="api-settings">
+        <summary>API設定(初回のみ)</summary>
+        <p class="help">
+          株価データは
+          <a href="https://twelvedata.com" target="_blank" rel="noopener">Twelve Data</a>
+          から取得します。無料登録してAPIキーを発行し、下に貼り付けて「保存」してください。
+          キーはこの端末のブラウザにのみ保存されます(外部に送信しません)。
+        </p>
+        <label class="field">
+          <span class="field-label">APIキー</span>
+          <input type="password" id="api-key" placeholder="例: abc123...">
+        </label>
+        <div class="form-actions">
+          <button type="button" id="save-key-btn" class="btn btn-primary">保存</button>
+          <button type="button" id="clear-key-btn" class="btn btn-ghost">クリア</button>
+        </div>
+        <p id="key-status" class="status"></p>
+      </details>
+    </section>
+
+    <!-- 2カラム(iPad以上) / 1カラム(iPhone) -->
+    <div class="two-col">
+      <!-- 左カラム: 入力 -->
+      <div class="col">
+        <!-- 銘柄検索 -->
+        <section class="card">
+          <h2>銘柄を分析する</h2>
+          <form id="fetch-form" novalidate>
+            <label class="field">
+              <span class="field-label">銘柄コード(4桁) <em>必須</em></span>
+              <input type="text" id="code" placeholder="例: 7203" required maxlength="5" inputmode="numeric">
+            </label>
+            <div class="form-actions">
+              <button type="submit" id="fetch-btn" class="btn btn-primary">株価を取得</button>
+            </div>
+            <p id="fetch-status" class="status"></p>
+          </form>
+        </section>
+
+        <!-- 将来予想の入力(株価取得後に表示) -->
+        <section id="forecast-card" class="card hidden">
+          <h2>将来予想を入力</h2>
+          <p class="help">
+            将来の株価は <strong>予想PER × 予想EPS</strong> で計算します。
+            企業の決算資料・四季報・アナリスト予想などから入力してください。
+          </p>
+
+          <label class="field">
+            <span class="field-label">予想PER(倍)</span>
+            <input type="number" id="forecast-per" placeholder="例: 12.5" step="0.01" min="0" inputmode="decimal">
+          </label>
+          <label class="field">
+            <span class="field-label">1年後 予想EPS(円)</span>
+            <input type="number" id="eps-1y" placeholder="例: 250" step="0.01" min="0" inputmode="decimal">
+          </label>
+          <label class="field">
+            <span class="field-label">2年後 予想EPS(円)</span>
+            <input type="number" id="eps-2y" placeholder="例: 270" step="0.01" min="0" inputmode="decimal">
+          </label>
+          <label class="field">
+            <span class="field-label">メモ</span>
+            <textarea id="memo" rows="3" placeholder="分析メモ・購入判断など"></textarea>
+          </label>
+
+          <div class="form-actions">
+            <button type="button" id="save-btn" class="btn btn-primary">この銘柄を保存</button>
+            <button type="button" id="cancel-btn" class="btn btn-ghost">クリア</button>
+          </div>
+        </section>
+      </div>
+
+      <!-- 右カラム: 結果 -->
+      <div class="col">
+        <section id="result-card" class="card hidden">
+          <h2 id="result-title">--</h2>
+          <p class="result-sub"><span id="result-code"></span> <span id="result-currency"></span></p>
+
+          <div class="stat-grid">
+            <div class="stat">
+              <span class="stat-label">現在株価</span>
+              <span class="stat-value" id="current-price">¥--</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">時価総額</span>
+              <span class="stat-value" id="market-cap">--</span>
+            </div>
+          </div>
+
+          <h3 class="subtitle">予想株価(計算結果)</h3>
+          <div class="stat-grid">
+            <div class="stat">
+              <span class="stat-label">1年後</span>
+              <span class="stat-value" id="price-1y">¥--</span>
+              <span class="stat-sub" id="rate-1y">--</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">2年後</span>
+              <span class="stat-value" id="price-2y">¥--</span>
+              <span class="stat-sub" id="rate-2y">--</span>
+            </div>
+          </div>
+          <p class="help" id="forecast-formula"></p>
+        </section>
+      </div>
+    </div>
+
+    <!-- 保存済み一覧 -->
+    <section class="card">
+      <h2>保存済みの分析</h2>
+      <p id="empty-message" class="empty">まだ分析はありません。上で銘柄コードを入力して始めましょう。</p>
+      <ul id="saved-list" class="stock-list"></ul>
+    </section>
+  </main>
+
+  <!-- 読み込み順: APIラッパー → メインスクリプト -->
+  <script src="analysis-api.js"></script>
+  <script src="analysis.js"></script>
+</body>
+</html>

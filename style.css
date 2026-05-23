@@ -232,3 +232,115 @@ html, body {
   gap: 8px;
   margin-top: 8px;
 }
+
+/* ===========================================
+   銘柄分析ページ用の追加スタイル
+   (損益メモと style.css を共有しています)
+   =========================================== */
+
+/* ヘッダー内ナビ(損益メモ ⇄ 分析 を行き来) */
+.header-nav {
+  margin-top: 6px;
+  font-size: 13px;
+}
+.header-nav .nav-link {
+  color: #fff;
+  text-decoration: underline;
+  opacity: 0.9;
+}
+
+/* iPad以上では少し横幅を広げて、2カラムを使う */
+.container-wide {
+  max-width: 560px;
+}
+@media (min-width: 768px) {
+  .container-wide { max-width: 920px; }
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .two-col .col {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+/* iPhone(<768px)では縦並び */
+.two-col { display: flex; flex-direction: column; gap: 16px; }
+.two-col .col { display: flex; flex-direction: column; gap: 16px; }
+
+/* details(API設定の折りたたみ) */
+details > summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: 4px 0;
+  list-style: none;
+}
+details > summary::-webkit-details-marker { display: none; }
+details > summary::before {
+  content: "▶ ";
+  font-size: 12px;
+  color: var(--color-muted);
+}
+details[open] > summary::before { content: "▼ "; }
+
+/* 補助テキスト */
+.help {
+  font-size: 13px;
+  color: var(--color-muted);
+  margin: 8px 0 12px;
+}
+.help a { color: var(--color-primary); }
+.subtitle {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 16px 0 8px;
+}
+.result-sub {
+  margin: -4px 0 12px;
+  color: var(--color-muted);
+  font-size: 13px;
+}
+
+/* ステータス表示(取得中・成功・失敗) */
+.status {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--color-muted);
+  min-height: 1em;
+}
+.status-ok    { color: var(--color-profit); }
+.status-error { color: var(--color-danger); }
+
+/* 統計ブロック(現在価格・時価総額・1年後・2年後) */
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.stat-grid-compact { gap: 6px; margin: 6px 0; }
+.stat {
+  background: #f9fafb;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.stat-label {
+  font-size: 12px;
+  color: var(--color-muted);
+}
+.stat-value {
+  font-size: 18px;
+  font-weight: 700;
+}
+.stat-sub {
+  font-size: 13px;
+  font-weight: 600;
+}
+.stat-sub.profit { color: var(--color-profit); }
+.stat-sub.loss   { color: var(--color-loss); }
+.stat-sub.flat   { color: var(--color-muted); }
